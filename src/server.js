@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import {initDB} from './config/db.js';
 import rateLimiter from './middleware/rateLimiter.js';
+import job from './config/cron.js';
 
 import transactionRoutes from './routes/transactionsRoutes.js';
 
@@ -9,6 +10,11 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT;
+
+// start cron job
+if(process.env.NODE_ENV === 'production'){
+  job.start();
+}
 
 // middleware
 app.use(express.json());
