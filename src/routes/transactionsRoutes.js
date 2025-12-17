@@ -13,14 +13,14 @@ const router = express.Router();
 // 1. add transaction
 router.post('/',getAllTransactions)
 
-// 2. get transaction by userId
+// 2. summary of transactions by userId (must be before /:userId to avoid route conflict)
+router.get('/summary/:userId', getTransactionSummaryByUserId)
+
+// 3. get transaction by userId
 router.get('/:userId', getTransactionsByUserId)
 
-// 3. delete transaction by id
-router.delete('/:id', deleteTransactionById) 
-
-// 4. summary of transactions by userId
-router.get('/summary/:userId', getTransactionSummaryByUserId)
+// 4. delete transaction by id
+router.delete('/:id', deleteTransactionById)
 
 
 export default router;
