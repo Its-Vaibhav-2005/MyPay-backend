@@ -66,31 +66,34 @@ try{
     }
 }
 
-async function getTransactionSummaryByUserId(req, res){
-    try{
-        const {userId} = req.params;
-        const balance = await sql`
-            SELECT COALESCE(SUM(amount), 0) AS balance FROM transactions WHERE userId = ${userId};
-        `;
-        const income = await sql`
-            SELECT COALESCE(SUM(amount), 0) AS income FROM transactions WHERE userId = ${userId} AND amount > 0;
-        `;      
-        const expense = await sql`
-            SELECT COALESCE(SUM(amount), 0) AS expense FROM transactions WHERE userId = ${userId} AND amount < 0;
-        `;
-        res.status(200).json({
-            "balance": balance[0].balance,
-            "income": income[0].income,
-            "expense": expense[0].expense
-        });
-        
-    }catch(err){
-        res.status(500).json({
-            msg:"Sorry, It's not you, it's us. Please try again later.",
-            "error": err.message
-        })
-    }
+async function getTransactionSummaryByUserId(req, res) {
+  try {
+    const { userId } = req.params;
 
+    const result = await sql`
+      SELECT
+        COALESCE(SUM(amount), 0) AS balance,
+        COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) AS income,
+        COALESCE(SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END), 0) AS expense
+      FROM transactions
+      WHERE userid = ${userId};
+    `;
+
+    res.status(200).json({
+      balance: Number(result[0].balance),
+      income: Number(result[0].income),
+      expense: Number(result[0].expense),
+    });
+
+  } catch (err) {
+    console.error("SUMMARY ERROR:", err);
+
+    res.status(500).json({
+      msg: "Sorry, it's not you, it's us. Please try again later.",
+      error: err.message,
+    });
+  }
 }
+
 
 export { getAllTransactions, getTransactionsByUserId, deleteTransactionById, getTransactionSummaryByUserId };
